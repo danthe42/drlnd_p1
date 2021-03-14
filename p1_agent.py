@@ -8,8 +8,12 @@ import torch.optim as optim
 TAU = 1e-3              # for soft update of target parameters
 UPDATE_EVERY = 4        # how often to update the network
 
-#device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-device = torch.device("cpu")
+# use GPU if available
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+"""
+The normal "Agent" class implements the Double DQN algorithm.
+"""
 
 class Agent():
     """Interacts with and learns from the environment."""
@@ -22,6 +26,10 @@ class Agent():
             state_size (int): dimension of each state
             action_size (int): dimension of each action
             seed (int): random seed
+            memory (object): transition memory for experience replay
+            batch_size (int): minibatch size
+            LR (float): learning rate
+            GAMMA (float): factor used to discount future values
         """
         self.state_size = state_size
         self.action_size = action_size
@@ -118,18 +126,24 @@ class Agent():
         for target_param, local_param in zip(target_model.parameters(), local_model.parameters()):
             target_param.data.copy_(tau*local_param.data + (1.0-tau)*target_param.data)
 
+"""
+The "PRIOAgent" class is based on the Double DQN algorithm ("Agent" class).
+There is only one addition to it's features: the learning algorithm is modified so it can be used for suppporting 
+prioritized experience replay. (able to update the replay buffer's probabilities, and is using importance-sampling weights)
+"""
+
 class PRIOAgent(Agent):
     def learn(self, experiences):
         """Update value parameters using given batch of experience tuples.
 
         Params
         ======
-            experiences (Tuple[torch.Variable]): tuple of (s, a, r, s', done) tuples 
+            experiences (Tuple[torch.Variable]): tuple of (idxs, s, a, r, s', done, weights) tuples 
         """
         idxs, states, actions, rewards, next_states, dones, weights = experiences
 
         # Use Double DQN algorithm here: 
-        # Evaluate with the target actions with the online network, and calculate their Q values with the target network.  
+        # Evaluate the next_states with the online network, and calculate these actions' Q values on the target network.  
         with torch.no_grad():
             next_actions = self.qnetwork_local(next_states).detach().max(1)[1].unsqueeze(1)
             Q_targets_next = self.qnetwork_target(next_states).detach().gather(1, next_actions)    
@@ -140,6 +154,7 @@ class PRIOAgent(Agent):
         # Get expected Q values from local model
         Q_expected = self.qnetwork_local(states).gather(1, actions)
 
+        # update the probabilities of the transitions in the current minibatch in the replay memory
         deltas = Q_targets.detach().cpu().numpy() - Q_expected.detach().cpu().numpy()
         self.memory.batch_update( idxs, abs(deltas) )
 

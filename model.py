@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+# We will use a neural network with 3 fully connected layers to define our policy.
+
 class QNetwork(nn.Module):
     """Actor (Policy) Model."""
 
@@ -22,6 +24,7 @@ class QNetwork(nn.Module):
         self.fc2 = nn.Linear(fc1_units, fc2_units)
         self.fc3 = nn.Linear(fc2_units, action_size)
 
+    # forward step: feed forward the input (state) through 3 FC layers and 2 ReLUs to get the estimated action valus. 
     def forward(self, state):
         """Build a network that maps state -> action values."""
         x = F.relu(self.fc1(state))

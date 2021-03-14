@@ -1,3 +1,12 @@
+"""
+ 
+ Console main program to train an agent to play Banana Collector.
+ There can be 2 different agents to train: Double DQN & Double DQN with prioritized experience replay.
+ Goal is 13.0 points, when it's reached the neural network parameters will be written to a (.pth) file.
+ To execute this, a Banana collector environment (simulator written in Unity) is necessary. 
+
+"""
+
 from unityagents import UnityEnvironment
 import numpy as np
 from p1_agent import Agent, PRIOAgent
@@ -26,7 +35,7 @@ if use_prioritized_experience_replay==True:
     ALPHA = 0.6             # [0~1] convert the importance of TD error to priority
     BETA = 0.6              # importance-sampling, from initial value increasing to 1
     BETA_INC_PER_SAMPLING = 0.000003
-    GAMMA = 0.98            # discount factor       # pipa
+    GAMMA = 0.98            # discount factor       
     LR = 5e-4               # learning rate 
 
     memory = PrioReplayBuffer(action_size, BUFFER_SIZE, BATCH_SIZE, seed, ALPHA, BETA, BETA_INC_PER_SAMPLING)
@@ -58,16 +67,16 @@ def dqn(n_episodes=5000, max_t=1000, eps_start=EPS_START, eps_end=EPS_END, eps_d
     scores_window = deque(maxlen=100)  # last 100 scores
     eps = eps_start                    # initialize epsilon
     for i_episode in range(1, n_episodes+1):
-        env_info = env.reset(train_mode=True)[brain_name]
+        env_info = env.reset(train_mode=True)[brain_name]   # reset the environment to the starting state
         state = env_info.vector_observations[0]
         score = 0   
         for t in range(max_t):
-            action = agent.act(state, eps)
+            action = agent.act(state, eps)                 # get the action using the network and an epsilon-greedy policy
             env_info = env.step(action)[brain_name]        # send the action to the environment
             next_state = env_info.vector_observations[0]   # get the next state
             reward = env_info.rewards[0]                   # get the reward
             done = env_info.local_done[0] 
-            agent.step(state, action, reward, next_state, done)
+            agent.step(state, action, reward, next_state, done)   # store the transition and learn when it's due
             state = next_state
             score += reward
             if done:
@@ -84,9 +93,9 @@ def dqn(n_episodes=5000, max_t=1000, eps_start=EPS_START, eps_end=EPS_END, eps_d
             break
     return scores
 
-scores = dqn()    
+scores = dqn()                            # train the agent
 
-print("\nScores: {}".format(scores))
+print("\nScores: {}".format(scores))      # just print the last 100 scores at the end, the network is saved anyways
 
 env.close()
 
