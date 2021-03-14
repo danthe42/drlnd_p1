@@ -31,7 +31,7 @@ if use_prioritized_experience_replay==True:
 
     memory = PrioReplayBuffer(action_size, BUFFER_SIZE, BATCH_SIZE, seed, ALPHA, BETA, BETA_INC_PER_SAMPLING)
     agent = PRIOAgent(state_size=state_size, action_size=action_size, seed=seed, memory=memory, batch_size=BATCH_SIZE, LR=LR, GAMMA=GAMMA)
-    netname = "net_ddqn.pth"
+    netname = "net_prioddqn.pth"
 
 else:
     
@@ -45,7 +45,7 @@ else:
 
     memory = ReplayBuffer(action_size, BUFFER_SIZE, BATCH_SIZE, seed)
     agent = Agent(state_size=state_size, action_size=action_size, seed=seed, memory=memory, batch_size=BATCH_SIZE, LR=LR, GAMMA=GAMMA)
-    netname = "net_prioddqn.pth"
+    netname = "net_ddqn.pth"
 
 try:
     agent.qnetwork_local.load_state_dict(torch.load(netname))
