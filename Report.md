@@ -1,10 +1,4 @@
-[//]: # "Image References"
 
-[image1]: https://user-images.githubusercontent.com/10624937/42135619-d90f2f28-7d12-11e8-8823-82b970a54d7e.gif "Trained Agent"
-
-
-
-Table of Contents:
 
 [TOC]
 
@@ -17,7 +11,9 @@ Table of Contents:
 - One, using the Double Q-learning algorithm (see 2nd paper in the References section for details),
 - And an other one, similar to the previous one, but it's replay buffer is not random. It follows the algorithm described in the 3rd referenced document. 
 
-### Architecture
+
+
+## Architecture
 
 I have create a hybrid solution in python using the numpy and pytorch frameworks for the agents, and using a UnityEnironment from the unityagents library as the bridge between the simulated environment implemented in Unity. 
 
@@ -39,61 +35,95 @@ The agents can be trained in console mode, or using a Jupyter notebook. The file
   - the results are visualized,
   - after training the models are loaded and inference mode is also demonstrated on both agents.   
 
-  This file is also exported here: [exported notebook](export/Navigation.md)
+  This file is also exported here, so you can read it without an installed Jupyter notebook instance: [exported notebook](export/Navigation.md)
 
 
 
-For this project, you will train an agent to navigate (and collect bananas!) in a large, square world.  
-
-![Trained Agent][image1]
-
-A reward of +1 is provided for collecting a yellow banana, and a reward of -1 is provided for collecting a blue banana.  Thus, the goal of your agent is to collect as many yellow bananas as possible while avoiding blue bananas.  
-
-The state space has 37 dimensions and contains the agent's velocity, along with ray-based perception of objects around agent's forward direction.  Given this information, the agent has to learn how to best select actions.  Four discrete actions are available, corresponding to:
-- **`0`** - move forward.
-- **`1`** - move backward.
-- **`2`** - turn left.
-- **`3`** - turn right.
-
-The task is episodic, and in order to solve the environment, your agent must get an average score of +13 over 100 consecutive episodes.
-
-### Getting Started
-
-1. Download the environment from one of the links below.  You need only select the environment that matches your operating system:
-    - Linux: [click here](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P1/Banana/Banana_Linux.zip)
-    - Mac OSX: [click here](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P1/Banana/Banana.app.zip)
-    - Windows (32-bit): [click here](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P1/Banana/Banana_Windows_x86.zip)
-    - Windows (64-bit): [click here](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P1/Banana/Banana_Windows_x86_64.zip)
-    
-    (_For Windows users_) Check out [this link](https://support.microsoft.com/en-us/help/827218/how-to-determine-whether-a-computer-is-running-a-32-bit-version-or-64) if you need help with determining if your computer is running a 32-bit version or 64-bit version of the Windows operating system.
-
-    (_For AWS_) If you'd like to train the agent on AWS (and have not [enabled a virtual screen](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Training-on-Amazon-Web-Service.md)), then please use [this link](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P1/Banana/Banana_Linux_NoVis.zip) to obtain the environment.
-
-2. Place the file in the DRLND GitHub repository, in the `p1_navigation/` folder, and unzip (or decompress) the file. 
-
-### Instructions
-
-Follow the instructions in `Navigation.ipynb` to get started with training your own agent!  
-
-### (Optional) Challenge: Learning from Pixels
-
-After you have successfully completed the project, if you're looking for an additional challenge, you have come to the right place!  In the project, your agent learned from information such as its velocity, along with ray-based perception of objects around its forward direction.  A more challenging task would be to learn directly from pixels!
-
-To solve this harder task, you'll need to download a new Unity environment.  This environment is almost identical to the project environment, where the only difference is that the state is an 84 x 84 RGB image, corresponding to the agent's first-person view.  (**Note**: Udacity students should not submit a project with this new environment.)
-
-You need only select the environment that matches your operating system:
-- Linux: [click here](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P1/Banana/VisualBanana_Linux.zip)
-- Mac OSX: [click here](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P1/Banana/VisualBanana.app.zip)
-- Windows (32-bit): [click here](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P1/Banana/VisualBanana_Windows_x86.zip)
-- Windows (64-bit): [click here](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P1/Banana/VisualBanana_Windows_x86_64.zip)
-
-Then, place the file in the `p1_navigation/` folder in the DRLND GitHub repository, and unzip (or decompress) the file.  Next, open `Navigation_Pixels.ipynb` and follow the instructions to learn how to use the Python API to control the agent.
-
-(_For AWS_) If you'd like to train the agent on AWS, you must follow the instructions to [set up X Server](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Training-on-Amazon-Web-Service.md), and then download the environment for the **Linux** operating system above.
+Please follow the previous notebook to understand the training of the two Banana Collector agents.
 
 
 
-REFERENCES
+## The Agents
+
+These agents, the hyperparameters, the roles, the different methods are explained in the code comments, so I will only give a summarized overview about the agents here.   
+
+
+
+### Double DQN Agent
+
+The normal Double DQN (DDQN) agent realizes the ideas described in the 2nd referenced material: 
+
+- It follows epsilon-greedy policy to determine the next action.
+- It uses two neural networks. The evaluation of which actions to follow, and the estimation of the values of these actions are separated, they are occuring on these two networks: One on the on-line network which is used to learn (backprop.), and the other on a "freezed" target network which is only updated at the end of the learning step. This helps to minimize the overoptimism experiences in standard DQNs.
+-  This agent is using the fixed-sized randomly sampling experience replay buffer from which it selects transitions using the uniform distribution.
+- The chosen Hyperparameter values for this agent:
+  - BUFFER_SIZE = int(1e5)  # replay buffer size
+  - BATCH_SIZE = 64         # minibatch size
+  - EPS_START = 0.1          # Starting Epsilon to be used for the Epsilon Greedy algorithm
+  - EPS_END = 0.               # Ending Epsilon to be used for the Epsilon Greedy algorithm
+  - EPS_DECAY = 0.98       # Epsilon Decay to be used for the Epsilon Greedy algorithm
+  - GAMMA = 0.99            # discount factor for calculation of future rewards
+  - LR = 5e-4                      # learning rate 
+  - Policy model can also be considered a hyperparameter: neural network with 3 Fully Connected layers, with 2 ReLU activation functions between them. The layer sizes are: [ 256, 128, 4 ].
+
+
+
+### Double DQN Agent + Prioritized Experience Replay
+
+The second agent is based on the previous one, and enhances it with an additional feature: the Prioritized Experience Replay. It is described in the 3rd referenced document in detail. It's main points:
+
+- This agent is using the PrioReplayBuffer class for its transition memory buffer. This special buffer uses the "proportional prioritization" variant for sampling. 
+- Alpha, Beta, Beta_Decay, and a small positive Epsilon value (to avoid zero probabilities) are four additional hyperparameters which are used in this special ReplayBuffer class. 
+- The chosen Hyperparameter values for this agent:
+  - BUFFER_SIZE = int(2e5)  # replay buffer size
+  - BATCH_SIZE = 32         # minibatch size
+  - EPS_START = 0.1          # Starting Epsilon to be used for the Epsilon Greedy algorithm
+  - EPS_END = 0.               # Ending Epsilon to be used for the Epsilon Greedy algorithm
+  - EPS_DECAY = 0.98       # Epsilon Decay to be used for the Epsilon Greedy algorithm
+  - ALPHA = 0.6                 # [0~1] convert the importance of TD error to priority
+  - BETA = 0.6                    # importance-sampling, from initial value increasing to 1
+  - BETA_INC_PER_SAMPLING = 0.000003     # importance-sampling inc./sample
+  - GAMMA = 0.98            # discount factor for calculation of future rewards
+  - LR = 5e-4                      # learning rate 
+  - Policy model can also be considered a hyperparameter: neural network with 3 Fully Connected layers, with 2 ReLU activation functions between them. The layer sizes are: [ 256, 128, 4 ].
+
+
+
+### Results, Conclusion
+
+After training both agents and comparing them, I got two important results:
+
+- Prioritized Replay solved the task in fewer episodes, which means it's learning is more efficient than the standard Double DQN's.
+- After "Banana Collecting" on a few episodes, I've noticed much smaller variations among the results of the 2nd agent. This means that the general quality of the policy is much higher, this agent generalizes better.   
+
+The task can be solved in relatively short time of training using Deep Q Networks, by trying only two possible enhancements on the original technic.  
+
+This DQN learning seems to be very promising solving problems where the reward only comes up sometime later, in the future.
+
+
+
+## Ideas for future work
+
+After this implementation, and comparision of these two agents' performance the following possible ideas and promising directions would be worthwhile to work on: 
+
+- Rank-based prioritization would be an easy to do modification (on the DDQN+Prioritized Exp. Replay agent). It would be a good idea to implement a 3rd agent with this algo. 
+- Check out using Dropout layers, maybe it will help in generalization, and would decrease overlearning.
+- Hyperparameter tuning: There's never enough CPU time for training... 
+- Cuda, just an idea: Can we upload all transitions in the Experience Replay Buffer to GPU ? Could it be more efficient performance-wise ?        
+- Other DQN enhancements should be incorporated. For example: Rainbow, Dueling network architectures, Asynchronous Methods, Distributional Perspective  
+- Learn from pixels: Solve the same problem with the following modification: inputs are raw pixel images instead of the current state space of 37 Real numbers. 
+
+
+
+## PS 
+
+Originally, I wanted to attach a video about the Banana Collection to this report. I've tried to use the Unity simulator on 2 PCs with Win64, and 1 PC with Ubuntu Linux OSs installed, without luck. It's possible that the Unity executable is too old, or my GPU cards are too new. Fortunately I could use the headless Simulator in my local Ubuntu Linux, and on the Workspace to train my agents.
+
+As it's not a requirement in the project rubric, we can ignore it for now.
+
+
+
+## REFERENCES
 
 Many Google DeepMind researchers - Human-level control through deep reinforcement learning - https://storage.googleapis.com/deepmind-media/dqn/DQNNaturePaper.pdf
 
