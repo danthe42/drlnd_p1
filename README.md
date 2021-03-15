@@ -1,4 +1,4 @@
-[//]: # (Image References)
+[//]: # "Image References"
 
 [image1]: https://user-images.githubusercontent.com/10624937/42135619-d90f2f28-7d12-11e8-8823-82b970a54d7e.gif "Trained Agent"
 
@@ -36,7 +36,10 @@ The task is episodic, and in order to solve the environment, your agent must get
 
 ### Instructions
 
-Follow the instructions in `Navigation.ipynb` to get started with training your own agent!  
+- Follow the instructions in `Navigation.ipynb` to get started with training your own agent in the Jupyter notebook environment,
+- or train the agents in console mode directly, by executing run.py.  
+
+To get more details about the concepts used in the implementation, you can read this [report](Report.md) .   
 
 ### (Optional) Challenge: Learning from Pixels
 
